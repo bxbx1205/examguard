@@ -1,0 +1,14 @@
+# Node
+extension/node_modules/
+
+# Build output
+extension/dist/
+
+# Environment files
+.env
+.env.*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/

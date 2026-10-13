@@ -1,0 +1,134 @@
+services:
+  # -------------------------------------------------------
+  # PostgreSQL Database Service
+  # -------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: examguard-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-examguard_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-examguard_secret_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-examguard_db}
+    ports:
+      - "${POSTGRES_PORT:-5434}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-examguard_admin} -d ${POSTGRES_DB:-examguard_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - examguard-net
+
+  # -------------------------------------------------------
+  # Redis In-Memory Cache & Pub/Sub
+  # -------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: examguard-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - examguard-net
+
+  # -------------------------------------------------------
+  # MinIO S3-Compatible Object Storage (Snapshots)
+  # -------------------------------------------------------
+  minio:
+    image: cgr.dev/chainguard/minio:latest
+    container_name: examguard-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9000"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - examguard-net
+
+  # -------------------------------------------------------
+  # Go High-Concurrency Backend Service
+  # -------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: examguard-backend
+    restart: unless-stopped
+    environment:
+      PORT: 8080
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-examguard_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-examguard_secret_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-examguard_db}
+      REDIS_ADDR: redis:6379
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_BUCKET: ${MINIO_BUCKET_NAME:-examguard-evidence}
+      JWT_SECRET: ${JWT_SECRET:-super_secret_examguard_jwt_key_2026}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - examguard-net
+
+  # -------------------------------------------------------
+  # Invigilator React Dashboard UI
+  # -------------------------------------------------------
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8080
+        VITE_WS_URL: ws://localhost:8080/ws
+    container_name: examguard-dashboard
+    restart: unless-stopped
+    ports:
+      - "5173:8080"
+    environment:
+      PORT: 8080
+    depends_on:
+      - backend
+    networks:
+      - examguard-net
+
+networks:
+  examguard-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  minio_data:
+    driver: local

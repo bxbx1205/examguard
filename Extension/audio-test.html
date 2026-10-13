@@ -1,0 +1,240 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>ExamGuard Audio Monitor</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      margin-bottom: 30px;
+    }
+
+    .controls {
+      margin-bottom: 25px;
+    }
+
+    button {
+      padding: 12px 22px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    #startAudio {
+      background: #22c55e;
+      color: white;
+    }
+
+    #stopAudio {
+      background: #ef4444;
+      color: white;
+    }
+
+    .status {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .status-title {
+      color: #94a3b8;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    #statusText {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 25px;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .score {
+      font-size: 56px;
+      font-weight: bold;
+      margin: 15px 0 5px;
+    }
+
+    .level {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .metric {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #334155;
+    }
+
+    .metric:last-child {
+      border-bottom: none;
+    }
+
+    .metric-name {
+      color: #94a3b8;
+    }
+
+    .metric-value {
+      font-weight: bold;
+    }
+
+    .reasons {
+      margin-top: 15px;
+    }
+
+    .reason {
+      padding: 10px;
+      margin-bottom: 8px;
+      background: #334155;
+      border-radius: 6px;
+    }
+
+    #history {
+      margin-top: 20px;
+    }
+
+    .history-item {
+      padding: 10px;
+      border-bottom: 1px solid #334155;
+      font-size: 14px;
+    }
+
+    .history-score {
+      font-weight: bold;
+    }
+
+    @media (max-width: 700px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+
+      body {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>ExamGuard Audio Monitor</h1>
+
+    <p class="subtitle">
+      Real-time microphone analytics and anomaly detection
+    </p>
+
+    <div class="controls">
+      <button id="startAudio">Start Microphone</button>
+      <button id="stopAudio">Stop Microphone</button>
+    </div>
+
+    <div class="status">
+      <div class="status-title">MICROPHONE STATUS</div>
+      <div id="statusText">INACTIVE</div>
+    </div>
+
+    <div class="dashboard">
+
+      <div class="card">
+        <h2>Anomaly Score</h2>
+
+        <div class="score" id="score">
+          0
+        </div>
+
+        <div class="level" id="level">
+          LOW
+        </div>
+
+        <div class="reasons" id="reasons">
+          No suspicious activity
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Audio Metrics</h2>
+
+        <div class="metric">
+          <span class="metric-name">Event Type</span>
+          <span class="metric-value" id="eventType">---</span>
+        </div>
+
+        <div class="metric">
+          <span class="metric-name">Volume</span>
+          <span class="metric-value" id="volume">0</span>
+        </div>
+
+        <div class="metric">
+          <span class="metric-name">Speech Energy</span>
+          <span class="metric-value" id="speechEnergy">0</span>
+        </div>
+
+        <div class="metric">
+          <span class="metric-name">Dominant Frequency</span>
+          <span class="metric-value" id="frequency">0 Hz</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="card" id="history">
+      <h2>Recent Events</h2>
+
+      <div id="historyList">
+        No events yet.
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="./src/models/audioTest.js"></script>
+
+</body>
+</html>

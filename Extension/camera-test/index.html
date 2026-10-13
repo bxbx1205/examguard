@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamGuard AI Proctoring Portal</title>
+    <style>
+        :root {
+            --bg-primary: #0a0c10;
+            --bg-secondary: #131720;
+            --border-color: #232a3b;
+            --text-main: #f1f5f9;
+            --text-muted: #8b9bb4;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-amber: #f59e0b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px;
+        }
+        .header {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .badge {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .badge-live {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .badge-offline {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .main-container {
+            width: 100%;
+            max-width: 900px;
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            gap: 20px;
+        }
+        .viewport-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            max-height: 440px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+        .overlay-notice {
+            position: absolute;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10, 12, 16, 0.9);
+            padding: 24px;
+            text-align: center;
+            gap: 12px;
+        }
+        .overlay-notice.active { display: flex; }
+        .overlay-notice h3 { color: var(--accent-red); font-size: 16px; font-weight: 600; }
+        .overlay-notice p { color: var(--text-muted); font-size: 13px; max-width: 320px; }
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+        }
+        .card-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 13px;
+        }
+        .status-row:last-child { border-bottom: none; }
+        .indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+        .dot.online { background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green); }
+        .dot.offline { background: var(--accent-red); box-shadow: 0 0 6px var(--accent-red); }
+        .dot.warning { background: var(--accent-amber); box-shadow: 0 0 6px var(--accent-amber); }
+        .feed-log {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            max-height: 180px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .log-entry {
+            padding: 4px 6px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 4px;
+            border-left: 2px solid var(--accent-blue);
+        }
+        .log-entry.crit { border-left-color: var(--accent-red); color: #fca5a5; }
+        .log-entry.warn { border-left-color: var(--accent-amber); color: #fde68a; }
+        .log-entry.ok { border-left-color: var(--accent-green); color: #a7f3d0; }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="brand">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span>ExamGuard AI Proctor</span>
+        </div>
+        <div id="sessionBadge" class="badge badge-live">Proctoring Active</div>
+    </header>
+
+    <main class="main-container">
+        <div class="viewport-card">
+            <div class="video-wrapper">
+                <video id="video" autoplay playsinline muted></video>
+                <div id="cameraAlert" class="overlay-notice">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                    <h3 id="alertTitle">No Camera Detected</h3>
+                    <p id="alertDesc">Please connect a working webcam and grant browser permissions to continue your exam.</p>
+                </div>
+            </div>
+            <div style="width: 100%; margin-top: 12px; display: flex; justify-content: space-between; font-size: 13px;">
+                <span id="status" style="color: var(--text-muted);">Initializing vision hardware...</span>
+                <span id="headPoseStatus" style="color: var(--text-muted); font-weight: 500;">POSE: Awaiting stream</span>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-title">Hardware Status</div>
+                <div class="status-row">
+                    <span>Webcam</span>
+                    <span id="camStatus" class="indicator"><span class="dot offline"></span> Offline</span>
+                </div>
+                <div class="status-row">
+                    <span>Microphone</span>
+                    <span id="micStatus" class="indicator"><span class="dot offline"></span> Offline</span>
+                </div>
+                <div class="status-row">
+                    <span>Vision AI</span>
+                    <span id="aiStatus" class="indicator"><span class="dot warning"></span> Loading</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Telemetry Activity</div>
+                <div id="telemetryLog" class="feed-log">
+                    <div class="log-entry ok">System initialized</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../dist/faceDetector.js"></script>
+    <script src="../dist/headPoseEstimator.js"></script>
+    <script src="../dist/audioAnalyzer.js"></script>
+    <script src="camera.js"></script>
+
+</body>
+</html>

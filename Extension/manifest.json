@@ -1,0 +1,57 @@
+{
+    "manifest_version": 3,
+    "name": "ExamGuard Sentinel",
+    "version": "1.0.0",
+    "description": "Privacy-first browser extension for online exam lockdown and proctoring.",
+
+    "permissions": [
+        "storage",
+        "tabs",
+        "activeTab",
+        "scripting"
+    ],
+
+    "content_security_policy": {
+        "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+    },
+
+    "host_permissions": [
+        "http://localhost:8080/*",
+        "http://*/*",
+        "https://*/*"
+    ],
+
+    "background": {
+        "service_worker": "background.js"
+    },
+
+    "action": {
+        "default_title": "ExamGuard Sentinel",
+        "default_popup": "popup/popup.html"
+    },
+
+    "content_scripts": [{
+        "matches": [
+            "http://*/*",
+            "https://*/*"
+        ],
+        "js": [
+            "dist/faceDetector.js",
+            "dist/headPoseEstimator.js",
+            "dist/audioAnalyzer.js",
+            "content/lockdown.js"
+        ],
+        "run_at": "document_start"
+    }],
+
+    "web_accessible_resources": [{
+        "resources": [
+            "dist/*",
+            "dist/wasm/*",
+            "models/*",
+            "camera-test/*",
+            "audio-test.html"
+        ],
+        "matches": ["<all_urls>"]
+    }]
+}

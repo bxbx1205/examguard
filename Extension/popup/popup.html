@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamGuard Sentinel</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>🛡️ ExamGuard</h1>
+        <p class="subtitle">Exam Proctoring Sentinel</p>
+
+        <!-- Hardware Diagnostics -->
+        <div id="deviceDiagnostics" class="device-diagnostics">
+            <div class="diag-item">
+                <span id="cameraStatusIcon">📷</span>
+                <span id="cameraStatusText">Checking camera...</span>
+            </div>
+            <div class="diag-item">
+                <span id="micStatusIcon">🎙️</span>
+                <span id="micStatusText">Checking mic...</span>
+            </div>
+        </div>
+
+        <!-- Login Section -->
+        <div id="loginSection">
+            <label for="examKey">Exam Key</label>
+            <input id="examKey" type="text" value="exam_2026_cs501" placeholder="Enter exam key">
+
+            <label for="studentId">Student ID</label>
+            <input id="studentId" type="text" value="50" placeholder="Enter student ID">
+
+            <label for="secretPin">Secret PIN</label>
+            <input id="secretPin" type="password" value="5678" placeholder="Enter PIN">
+
+            <button id="loginButton">Login</button>
+
+            <div id="loginStatus" class="login-status">Not logged in</div>
+        </div>
+
+        <hr>
+
+        <!-- Exam Status -->
+        <div id="status" class="status inactive">
+            Exam Not Started
+        </div>
+
+        <button id="startExam">
+            Start Exam
+        </button>
+
+        <button id="testHardware" class="test-hardware">
+            🎥 Launch Proctoring Portal
+        </button>
+
+        <button id="stopExam" class="stop">
+            Stop Exam
+        </button>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>
